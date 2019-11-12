@@ -88,9 +88,15 @@
             }else
                 $("#homeFaqSearchBody").html(" ");
         });
-        // IF INPUT NOT FOCUS CLEAR LIST
+
+        // IF FOCUS SHOW LIST
+        $("#homefaqsearchlist").focus(function(){
+            $("#homeFaqSearchBody").show();
+        });
+
+        // IF INPUT NOT FOCUS HIDE LIST
         $("#homefaqsearchlist").focusout(function(){
-            $("#homeFaqSearchBody").html(" ");
+            $("#homeFaqSearchBody").fadeOut();
         });
 
         // IF LIST ITEM CLICK PARSE DETAILS BODY API
