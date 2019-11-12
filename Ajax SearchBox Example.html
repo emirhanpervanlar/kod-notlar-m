@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Ajax SearchBox Example</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css">
+    <style>
+        .faq-outer {
+            text-align: center;
+            padding-bottom: 35px;
+            width:500px;
+            margin:0 auto;
+        }
+        .faq-outer .search-outer {
+            padding: 0 0 0 30px;
+            margin-bottom: 10px;
+            border: 3px #ea5953 solid;
+            border-radius: 35px;
+            margin-top: 35px;
+        }
+        .d-flex {
+            display: -webkit-box!important;
+            display: -ms-flexbox!important;
+            display: flex!important;
+        }
+        #homefaqsearchlist {
+            width: 100%;
+            border: none;
+            transition: all .5s;
+            cursor: pointer;
+        }
+        .faq-outer .search-outer .go-btn {
+            width: 66px;
+            height: 66px;
+            padding: 0;
+            margin: -2px;
+            border: none;
+            border-radius: 50%;
+            background: #ea5953;
+            font-size: 26px;
+            color: #fff;
+            cursor: pointer;
+            transition: all .3s ease 0s;
+        }
+    </style>
+</head>
+<body>
+<section class="faq-outer">
+    <div class="search-outer d-flex">
+        <input name="Search" id="homefaqsearchlist" type="text" placeholder="Aklınıza takılan şeyi kısaca belirtiniz" autocomplete="off">
+        <button  class="go-btn" onclick="searchFAQ()">
+            <i class="fas fa-search"></i>
+        </button>
+    </div>
+    <div id="homeFaqSearchBody"></div>
+</section>
+<script>
+    function searchFAQ(){
+        // SEND PARAMS SEARCH API
+        $.ajax({
+            type: "GET",
+            url: "searchHomeFAQ",
+            headers: {"X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")},
+            data: {faqKey: $("#homefaqsearchlist").val()},
+            success: function (response) {
+                // CLEAR LİST
+                $("#homeFaqSearchBody").html(" ");
+                // IF DATA > 0 PARSE BODY
+                if(response.searchData.length > 0){
+                    $.each(response.searchData,function(index,item){
+                        $("#homeFaqSearchBody").append("<li data-id='"+item.id+"'>"+item.Sorun+"</li>");
+                    })
+                }
+            }
+        })
+    }
+
+    $(document).ready(function () {
+        // LISTEN INPUT KEY
+        $("#homefaqsearchlist").keyup(function(){
+            // IF LETTER COUNT > 2 SEARCH DATA
+            if($(this).val().length > 2) {
+                searchFAQ();
+            }else
+                $("#homeFaqSearchBody").html(" ");
+        });
+        // IF INPUT NOT FOCUS CLEAR LIST
+        $("#homefaqsearchlist").focusout(function(){
+            $("#homeFaqSearchBody").html(" ");
+        });
+
+        // IF LIST ITEM CLICK PARSE DETAILS BODY API
+        $("#homeFaqSearchBody").on("click",'li',function(){
+            $("#homefaqsearchlist").val($(this).html());
+            $("#homeFaqSearchBody").html(" ");
+            $.ajax({
+                type:"GET",
+                url:"getSingleHomeFAQ",
+                headers:{"X-CSRF-TOKEN":$('meta[name="csrf-token"]').attr("content")},
+                data:{faq_id:$(this).data("id")},
+                success:function(a) {
+                    var e = '<div class="card"><div class="card-header active" role="tab" id="headingOne"> <a data-toggle="collapse" href="#collapse0" aria-expanded="false" aria-controls="collapse0" class="collapsed"><h3>' + a.Sorun + '</h3></a><i class="fas fa-angle-down"></i></div><div id="collapse0" class="collapse show" role="tabpanel" aria-labelledby="headingOne" data-parent="#accordion"><div class="card-body"><p id="faqcozum0">' + a.Cozum + "</p></div></div></div>";
+                    $(".career-accordian").html("");
+                    $(".career-accordian").append(e);
+                }
+            })
+        });
+    });
+</script>
+</body>
+</html>
